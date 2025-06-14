@@ -21,8 +21,10 @@
     <script type="text/babel">
 
         // --- CONFIGURATION ---
-        // Paste your deployed Google Apps Script Web App URL here.
-        const SCRIPT_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgCHAcRiVTHqrSeilCWEq-z2IqWamjjT6dkYrJ6Q2Xb6Vy9fCDJ_l2Ysqq9Qgw_YbPRm2m2anDjOHavJ1F7A2zVF78n9iMTX-TPo-q8KAzU8RlhFQzaayEw4ddeh8rEuXkWgf_3aI2eWBQWEC9-q5fUtIITaHFhVKhCvTHulFtVeXeAjPtFRAzMRzKMZnQC6nXO6bxPh3C3qdAHbPr7byUuIjRZyNuu2fuETcB-CSySRuBGz0Pza_sz7jIZxu0bs9JSDwaKM3F6Fi_A38oEI1YqUTH0Bg&lib=Mw48-dHliRnjOPIZUXIZ-3bIs2nCFLnrS";
+        // IMPORTANT: You MUST use the URL from a NEW deployment. It will start with
+        // https://script.google.com/macros/s/.../exec
+        // The ...googleusercontent.com... URL will NOT work and will cause network errors.
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0Lc6MzV13RHWD465jBOAv69yYlPUhvDawICOQeUZjcuBLx5ni3d8YL-JSXhB_Wm8n/exec";
         // -------------------
 
         const { useState, useEffect, useCallback, useMemo } = React;
@@ -213,17 +215,18 @@
             const handleSubmit = async () => {
                 setIsLoading(true);
                 try {
+                    // Using FormData is more reliable for avoiding CORS issues with POST requests.
+                    const formData = new FormData();
+                    formData.append('action', 'saveData');
+                    formData.append('payload', JSON.stringify({
+                        className: teacher.assignedClass,
+                        date: selectedDate,
+                        attendanceData: attendanceData
+                    }));
+
                     const response = await fetch(SCRIPT_URL, {
                         method: 'POST',
-                        redirect: 'follow',
-                        body: JSON.stringify({
-                            className: teacher.assignedClass,
-                            date: selectedDate,
-                            attendanceData: attendanceData
-                        }),
-                         headers: {
-                            "Content-Type": "text/plain;charset=utf-8",
-                        },
+                        body: formData,
                     });
                     
                     const result = await response.json();
