@@ -215,19 +215,28 @@
                 try {
                     const response = await fetch(SCRIPT_URL, {
                         method: 'POST',
-                        mode: 'no-cors', // Important for Apps Script POST requests from browser
+                        redirect: 'follow',
                         body: JSON.stringify({
                             className: teacher.assignedClass,
                             date: selectedDate,
                             attendanceData: attendanceData
-                        })
+                        }),
+                         headers: {
+                            "Content-Type": "text/plain;charset=utf-8",
+                        },
                     });
-                    // Because of 'no-cors', we can't read the response. We'll just assume success if no error was thrown.
-                    setIsExistingEntry(true);
-                    setToast({ message: `Data sent successfully!`, type: 'success' });
+                    
+                    const result = await response.json();
+
+                    if (result.success) {
+                        setIsExistingEntry(true);
+                        setToast({ message: `Data saved successfully!`, type: 'success' });
+                    } else {
+                        setToast({ message: `Error saving: ${result.error || 'Unknown error'}`, type: 'error' });
+                    }
                 } catch (error) {
                     console.error("Submit Error:", error);
-                    setToast({ message: 'Error sending data.', type: 'error' });
+                    setToast({ message: 'Error sending data. Check network connection.', type: 'error' });
                 } finally {
                     setIsLoading(false);
                 }
